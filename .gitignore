@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+review.log
+kanban.log
+
+# Database (JSON is okay, but ignore compiled backups)
+*.backup
+*.bak
+
+# MCP
+.mcp-venv/
+credentials/
+
+# Temporary files
+temp/
+tmp/
