@@ -7,10 +7,19 @@
         {
           "id": 4,
           "text": "Define a pipeline process for new workflows",
-          "column": "todo",
+          "column": "ideation",
           "done": false,
           "notes": "Assigning to Raz to come up with a concept and integrate into the established Kanban board",
-          "createdAt": "2026-04-19T22:04:00Z"
+          "createdAt": "2026-04-19T22:04:00Z",
+          "movedToIdeationAt": "2026-04-19T22:04:00Z",
+          "activity": [
+            {
+              "timestamp": "2026-04-19T22:04:00Z",
+              "action": "created",
+              "from": null,
+              "to": "ideation"
+            }
+          ]
         }
       ]
     },
@@ -21,29 +30,81 @@
         {
           "id": 3,
           "text": "Setup passive income strategy for pre-retirement",
-          "column": "todo",
+          "column": "definition",
           "done": false,
           "createdAt": "2026-04-19T20:39:00Z",
-          "notes": ""
+          "movedToDefinitionAt": "2026-04-19T20:39:00Z",
+          "activity": [
+            {
+              "timestamp": "2026-04-19T20:39:00Z",
+              "action": "created",
+              "from": null,
+              "to": "definition"
+            }
+          ]
         }
       ]
     },
     {
       "id": "dev",
       "title": "Dev",
-      "tasks": []
+      "tasks": [
+        {
+          "id": 6,
+          "text": "Test Raz Commands",
+          "column": "dev",
+          "done": false,
+          "notes": "Test",
+          "createdAt": "2026-04-21T14:45:00Z",
+          "activity": [
+            {
+              "timestamp": "2026-04-21T14:45:00Z",
+              "action": "created",
+              "from": null,
+              "to": "ideation"
+            },
+            {
+              "timestamp": "2026-04-21T14:40:53.686196+00:00",
+              "action": "raz_command",
+              "from": "ideation",
+              "to": "dev",
+              "command": "!move: dev"
+            },
+            {
+              "timestamp": "2026-04-21T14:40:53.686216+00:00",
+              "action": "raz_command",
+              "command": "!priority: high"
+            }
+          ],
+          "movedAt": "2026-04-21T14:40:53.686162+00:00",
+          "movedToDevAt": "2026-04-21T14:40:53.686190+00:00",
+          "priority": "high",
+          "prioritySetAt": "2026-04-21T14:40:53.686211+00:00",
+          "watchedByRaz": true,
+          "watchedAt": "2026-04-21T14:40:53.686225+00:00"
+        }
+      ]
     },
     {
       "id": "review",
       "title": "Review",
       "tasks": [
         {
-          "id": 3,
+          "id": 5,
           "text": "April 20 Kanban Board MVP",
           "column": "review",
           "done": false,
           "notes": "Complete implementation: 5-phase Kanban with AI automation, MCP integration, cron jobs, backup system",
-          "createdAt": "2026-04-20T08:35:00Z"
+          "createdAt": "2026-04-20T08:35:00Z",
+          "movedToReviewAt": "2026-04-20T08:35:00Z",
+          "activity": [
+            {
+              "timestamp": "2026-04-20T08:35:00Z",
+              "action": "created",
+              "from": null,
+              "to": "review"
+            }
+          ]
         }
       ]
     },
@@ -52,5 +113,22 @@
       "title": "Done",
       "tasks": []
     }
-  ]
+  ],
+  "pipeline": {
+    "version": "1.0",
+    "columns": [
+      "ideation",
+      "definition",
+      "dev",
+      "review",
+      "done"
+    ],
+    "columnOrder": [
+      "ideation",
+      "definition",
+      "dev",
+      "review",
+      "done"
+    ]
+  }
 }

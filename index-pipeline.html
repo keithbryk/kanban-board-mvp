@@ -1,42 +1,649 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Kanban Workflow Pipeline</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raz Kanban Board - Phase 3</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #0d1117; color: #c9d1d9; margin: 0; }
-        .header { max-width: 1600px; margin: 0 auto 20px; text-align: center; }
-        .board { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px; }
-        .column { background: #161b22; padding: 15px; min-width: 300px; border-radius: 8px; border: 1px solid #30363d; flex-shrink: 0; }
-        .column-header { margin: 0 0 15px 0; padding: 10px; border-radius: 4px; font-weight: bold; text-align: center; }
-        .column-ideation { background: #1f6feb; }
-        .column-definition { background: #238636; }
-        .column-dev { background: #8957e5; }
-        .column-review { background: #d29922; }
-        .column-done { background: #388bfd; }
-        .task { background: #21262d; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #30363d; }
-        .task-title { font-weight: bold; margin-bottom: 8px; color: #e6edf3; }
-        .task-notes { font-size: 12px; color: #8b949e; margin-top: 8px; padding-top: 8px; border-top: 1px solid #30363d; }
-        .add-task { margin-bottom: 20px; }
-        textarea { width: 100%; height: 80px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; padding: 10px; margin-top: 8px; font-family: inherit; }
-        textarea:focus { outline: none; border-color: #58a6ff; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #2ea043; }
-        ::-webkit-scrollbar { height: 10px; }
-        ::-webkit-scrollbar-track { background: #161b22; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        header .subtitle { opacity: 0.8; font-size: 0.85rem; }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 15px 20px;
+            background: #16213e;
+            margin: 20px;
+            border-radius: 12px;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .value { font-size: 1.8rem; font-weight: bold; color: #667eea; }
+        .stat-item .label { font-size: 0.75rem; opacity: 0.7; text-transform: uppercase; }
+        
+        .board {
+            display: flex;
+            gap: 15px;
+            padding: 0 20px 20px;
+            overflow-x: auto;
+            min-height: calc(100vh - 200px);
+        }
+        .column {
+            flex: 0 0 300px;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+        }
+        .column-header h2 { font-size: 1rem; }
+        .column-header .count {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+        .column.ideation { border-bottom: 3px solid #e94560; }
+        .column.definition { border-bottom: 3px solid #f39c12; }
+        .column.dev { border-bottom: 3px solid #3498db; }
+        .column.review { border-bottom: 3px solid #9b59b6; }
+        .column.done { border-bottom: 3px solid #27ae60; }
+        
+        .tasks { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        
+        .task {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 12px;
+            position: relative;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+        .task:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .task.priority-high { border-left-color: #e74c3c; }
+        .task.priority-critical { border-left-color: #c0392b; background: linear-gradient(90deg, rgba(231,76,60,0.1) 0%, transparent 50%); }
+        .task.blocked { opacity: 0.7; border-left-color: #95a5a6; }
+        .task.blocked::after { content: '🚧 BLOCKED'; position: absolute; top: 5px; right: 5px; font-size: 0.6rem; background: #95a5a6; padding: 2px 6px; border-radius: 3px; }
+        .task.watched { border-left-color: #f1c40f; }
+        .task.done { opacity: 0.6; }
+        
+        .task-text { font-size: 0.9rem; margin-bottom: 8px; line-height: 1.4; }
+        
+        .task-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+        .task-meta span { display: flex; align-items: center; gap: 3px; }
+        .task-meta .priority { font-weight: bold; }
+        .task-meta .priority.high { color: #e74c3c; }
+        .task-meta .priority.critical { color: #c0392b; }
+        
+        .task-notes {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+        .task-notes::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, #0f3460); }
+        .task-notes.expanded { max-height: none; overflow: auto; }
+        .task-notes.expanded::after { display: none; }
+        
+        .task-activity {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            font-size: 0.65rem;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        .activity-entry { padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .activity-entry:last-child { border-bottom: none; }
+        .activity-entry .action { color: #667eea; }
+        .activity-entry .time { opacity: 0.5; float: right; }
+        
+        .task-actions {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .task:hover .task-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+        
+        .task-actions button {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .task-actions button:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+        .task-actions button.move-dev { background: #3498db; }
+        .task-actions button.move-review { background: #9b59b6; }
+        .task-actions button.move-done { background: #27ae60; }
+        .task-actions button.move-ideation { background: #e94560; }
+        .task-actions button.delete { background: #e74c3c; }
+        
+        .add-task-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .add-task-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); }
+        
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 { margin-bottom: 15px; color: #667eea; }
+        .modal-content input, .modal-content textarea, .modal-content select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #0f3460;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .modal-content textarea { min-height: 100px; resize: vertical; }
+        .modal-content select { cursor: pointer; }
+        
+        .command-hint {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+        .command-hint code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; }
+        
+        .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .modal-actions .cancel { background: rgba(255,255,255,0.1); color: #fff; }
+        .modal-actions .save { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+        
+        /* Detail Modal */
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h4 { font-size: 0.85rem; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; }
+        .detail-section .value { font-size: 0.95rem; }
+        .detail-section .value.small { font-size: 0.8rem; opacity: 0.8; }
+        
+        .raz-commands {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .raz-commands h4 { color: #667eea; margin-bottom: 8px; font-size: 0.8rem; }
+        .raz-commands code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; display: inline-block; margin: 2px; }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2000;
+        }
+        .toast.show { opacity: 1; }
+        .toast.error { background: #e74c3c; }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .refresh-btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📋 Kanban Workflow Pipeline</h1>
+    <header>
+        <h1>🤝 Raz Kanban Board</h1>
+        <div class="subtitle">Phase 3: Enhanced UI with Move Actions</div>
+    </header>
+    
+    <div class="stats-bar" id="stats">
+        <div class="stat-item"><div class="value" id="stat-total">0</div><div class="label">Total</div></div>
+        <div class="stat-item"><div class="value" id="stat-active">0</div><div class="label">Active</div></div>
+        <div class="stat-item"><div class="value" id="stat-dev">0</div><div class="label">In Dev</div></div>
+        <div class="stat-item"><div class="value" id="stat-review">0</div><div class="label">Review</div></div>
+        <div class="stat-item"><div class="value" id="stat-done">0</div><div class="label">Done</div></div>
+        <div class="stat-item"><div class="value" id="stat-blocked">0</div><div class="label">Blocked</div></div>
     </div>
-    <div class="add-task">
-        <input type="text" id="taskInput" placeholder="Enter a new task..." style="padding: 10px; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #c9d1d9;">
-        <button id="addTaskBtn">Add Task</button>
+    
+    <div class="board" id="board"></div>
+    
+    <button class="refresh-btn" onclick="loadBoard()">🔄 Refresh</button>
+    
+    <!-- Add Task Modal -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3>➕ Add New Task</h3>
+            <input type="text" id="newTaskText" placeholder="Task description...">
+            <select id="newTaskColumn">
+                <option value="ideation">📝 Ideation</option>
+                <option value="definition">📋 Definition</option>
+                <option value="dev">💻 Dev</option>
+                <option value="review">👁️ Review</option>
+            </select>
+            <textarea id="newTaskNotes" placeholder="Notes (supports Raz commands)"></textarea>
+            <div class="command-hint">
+                Raz commands: <code>!move:dev</code> <code>!priority:high</code> <code>!watch</code> <code>!block:reason</code>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('addModal')">Cancel</button>
+                <button class="save" onclick="saveNewTask()">Add Task</button>
+            </div>
+        </div>
     </div>
-    <div class="board" id="board">Loading...</div>
-    <script src="app.js"></script>
+    
+    <!-- Task Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <h3 id="detailTitle">Task Details</h3>
+            <div id="detailContent"></div>
+            <div class="raz-commands">
+                <h4>⚡ Quick Actions</h4>
+                <div id="quickActions"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel" onclick="closeModal('detailModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const KANBAN_FILE = '/kanban.json';
+        const API_MOVE = '/home/kbryk/kanban/kanban-api-enhanced.py';
+        let kanbanData = null;
+        
+        async function loadBoard() {
+            try {
+                const response = await fetch(KANBAN_FILE + '?t=' + Date.now());
+                kanbanData = await response.json();
+                renderBoard();
+                updateStats();
+                showToast('Board refreshed');
+            } catch (err) {
+                showToast('Error loading board', true);
+            }
+        }
+        
+        function updateStats() {
+            let total = 0, active = 0, dev = 0, review = 0, done = 0, blocked = 0;
+            kanbanData.columns.forEach(col => {
+                total += col.tasks.length;
+                if (col.id === 'dev') dev = col.tasks.length;
+                else if (col.id === 'review') review = col.tasks.length;
+                else if (col.id === 'done') done = col.tasks.length;
+                col.tasks.forEach(t => {
+                    if (t.done) done++;
+                    else active++;
+                    if (t.blocked) blocked++;
+                });
+            });
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-active').textContent = active;
+            document.getElementById('stat-dev').textContent = dev;
+            document.getElementById('stat-review').textContent = review;
+            document.getElementById('stat-done').textContent = done;
+            document.getElementById('stat-blocked').textContent = blocked;
+        }
+        
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            kanbanData.columns.forEach(col => {
+                const column = document.createElement('div');
+                column.className = `column ${col.id}`;
+                column.innerHTML = `
+                    <div class="column-header">
+                        <h2>${col.title}</h2>
+                        <span class="count">${col.tasks.length}</span>
+                    </div>
+                    <div class="tasks" id="tasks-${col.id}"></div>
+                    ${col.id !== 'done' ? '<button class="add-task-btn" onclick="openAddModal(\'' + col.id + '\')">+ Add Task</button>' : ''}
+                `;
+                
+                col.tasks.forEach(task => {
+                    const taskEl = createTaskElement(task, col.id);
+                    column.querySelector('.tasks').appendChild(taskEl);
+                });
+                
+                board.appendChild(column);
+            });
+        }
+        
+        function createTaskElement(task, columnId) {
+            const el = document.createElement('div');
+            el.className = 'task';
+            if (task.priority) el.classList.add(`priority-${task.priority}`);
+            if (task.blocked) el.classList.add('blocked');
+            if (task.watchedByRaz) el.classList.add('watched');
+            if (task.done) el.classList.add('done');
+            
+            const createdAt = new Date(task.createdAt).toLocaleDateString();
+            const priorityColors = {high: 'high', critical: 'critical'};
+            const priorityClass = priorityColors[task.priority] || '';
+            
+            el.innerHTML = `
+                <div class="task-text">${task.text}</div>
+                <div class="task-meta">
+                    <span>📅 ${createdAt}</span>
+                    ${task.priority ? `<span class="priority ${priorityClass}">⚡ ${task.priority}</span>` : ''}
+                    ${task.watchedByRaz ? '<span>👀 Raz</span>' : ''}
+                    ${task.assignedTo ? `<span>👤 ${task.assignedTo}</span>` : ''}
+                    ${task.estimatedHours ? `<span>⏱️ ${task.estimatedHours}h</span>` : ''}
+                </div>
+                ${task.notes ? `<div class="task-notes" onclick="toggleNotes(this)">${task.notes}</div>` : ''}
+                <div class="task-activity">${renderActivity(task.activity || [])}</div>
+                <div class="task-actions">
+                    ${columnId !== 'dev' ? '<button class="move-dev" onclick="moveTask(' + task.id + ', \'dev\')">→ Dev</button>' : ''}
+                    ${columnId !== 'review' ? '<button class="move-review" onclick="moveTask(' + task.id + ', \'review\')">→ Review</button>' : ''}
+                    ${columnId !== 'done' ? '<button class="move-done" onclick="moveTask(' + task.id + ', \'done\')">✓ Done</button>' : ''}
+                    ${columnId !== 'ideation' && columnId !== 'definition' ? '<button class="move-ideation" onclick="moveTask(' + task.id + ', \'ideation\')">← Back</button>' : ''}
+                    <button onclick="showDetail(' + task.id + ')">📋 Details</button>
+                </div>
+            `;
+            
+            el.onclick = (e) => { if (!e.target.closest('button')) showDetail(task.id); };
+            return el;
+        }
+        
+        function toggleNotes(el) {
+            el.classList.toggle('expanded');
+        }
+        
+        function renderActivity(activity) {
+            if (!activity.length) return '<div style="opacity:0.5;font-size:0.6rem">No activity yet</div>';
+            return activity.slice(-5).reverse().map(a => {
+                const time = new Date(a.timestamp).toLocaleTimeString();
+                const action = a.action === 'moved' ? `${a.from} → ${a.to}` : 
+                              a.action === 'raz_command' ? a.command : a.action;
+                return `<div class="activity-entry"><span class="action">${action}</span><span class="time">${time}</span></div>`;
+            }).join('');
+        }
+        
+        function openAddModal(column) {
+            document.getElementById('newTaskColumn').value = column;
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('newTaskText').focus();
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        async function saveNewTask() {
+            const text = document.getElementById('newTaskText').value.trim();
+            const column = document.getElementById('newTaskColumn').value;
+            const notes = document.getElementById('newTaskNotes').value.trim();
+            
+            if (!text) return;
+            
+            // Read current kanban.json and add task
+            const response = await fetch(KANBAN_FILE);
+            const data = await response.json();
+            
+            const maxId = Math.max(...data.columns.flatMap(c => c.tasks.map(t => t.id || 0)));
+            const now = new Date().toISOString();
+            
+            const newTask = {
+                id: maxId + 1,
+                text: text,
+                column: column,
+                done: false,
+                notes: notes,
+                createdAt: now,
+                movedToIdeationAt: column === 'ideation' ? now : undefined,
+                movedToDefinitionAt: column === 'definition' ? now : undefined,
+                movedToDevAt: column === 'dev' ? now : undefined,
+                movedToReviewAt: column === 'review' ? now : undefined,
+                activity: [{timestamp: now, action: 'created', from: null, to: column}]
+            };
+            
+            // Remove undefined fields
+            Object.keys(newTask).forEach(k => newTask[k] === undefined && delete newTask[k]);
+            
+            for (const col of data.columns) {
+                if (col.id === column) {
+                    col.tasks.push(newTask);
+                    break;
+                }
+            }
+            
+            // Save back
+            await fetch(KANBAN_FILE, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            
+            closeModal('addModal');
+            document.getElementById('newTaskText').value = '';
+            document.getElementById('newTaskNotes').value = '';
+            loadBoard();
+            showToast('Task added!');
+        }
+        
+        async function moveTask(taskId, toColumn) {
+            try {
+                const response = await fetch(KANBAN_FILE);
+                const data = await response.json();
+                
+                let task = null;
+                let fromCol = null;
+                
+                for (const col of data.columns) {
+                    const idx = col.tasks.findIndex(t => t.id === taskId);
+                    if (idx !== -1) {
+                        task = col.tasks.splice(idx, 1)[0];
+                        fromCol = col.id;
+                        break;
+                    }
+                }
+                
+                if (!task) return;
+                
+                const now = new Date().toISOString();
+                task.column = toColumn;
+                task.movedAt = now;
+                if (toColumn === 'dev') task.movedToDevAt = now;
+                else if (toColumn === 'review') task.movedToReviewAt = now;
+                else if (toColumn === 'done') { task.completedAt = now; task.done = true; }
+                
+                task.activity.push({
+                    timestamp: now,
+                    action: 'moved',
+                    from: fromCol,
+                    to: toColumn,
+                    command: 'UI button'
+                });
+                
+                for (const col of data.columns) {
+                    if (col.id === toColumn) {
+                        col.tasks.push(task);
+                        break;
+                    }
+                }
+                
+                await fetch(KANBAN_FILE, {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                
+                loadBoard();
+                showToast(`Moved to ${toColumn}!`);
+            } catch (err) {
+                showToast('Error moving task', true);
+            }
+        }
+        
+        function showDetail(taskId) {
+            let task = null;
+            let currentColumn = null;
+            
+            kanbanData.columns.forEach(col => {
+                const t = col.tasks.find(t => t.id === taskId);
+                if (t) { task = t; currentColumn = col.id; }
+            });
+            
+            if (!task) return;
+            
+            document.getElementById('detailTitle').textContent = task.text;
+            
+            let html = `
+                <div class="detail-section">
+                    <h4>Column</h4>
+                    <div class="value">${currentColumn}</div>
+                </div>
+                <div class="detail-section">
+                    <h4>Created</h4>
+                    <div class="value">${new Date(task.createdAt).toLocaleString()}</div>
+                </div>
+                ${task.movedToDevAt ? `<div class="detail-section"><h4>Moved to Dev</h4><div class="value">${new Date(task.movedToDevAt).toLocaleString()}</div></div>` : ''}
+                ${task.movedToReviewAt ? `<div class="detail-section"><h4>Moved to Review</h4><div class="value">${new Date(task.movedToReviewAt).toLocaleString()}</div></div>` : ''}
+                ${task.completedAt ? `<div class="detail-section"><h4>Completed</h4><div class="value">${new Date(task.completedAt).toLocaleString()}</div></div>` : ''}
+                ${task.notes ? `<div class="detail-section"><h4>Notes</h4><div class="value small">${task.notes}</div></div>` : ''}
+                ${task.priority ? `<div class="detail-section"><h4>Priority</h4><div class="value">${task.priority}</div></div>` : ''}
+                ${task.blockReason ? `<div class="detail-section"><h4>Block Reason</h4><div class="value">${task.blockReason}</div></div>` : ''}
+                ${task.assignedTo ? `<div class="detail-section"><h4>Assigned To</h4><div class="value">${task.assignedTo}</div></div>` : ''}
+                ${task.estimatedHours ? `<div class="detail-section"><h4>Estimate</h4><div class="value">${task.estimatedHours} hours</div></div>` : ''}
+            `;
+            
+            document.getElementById('detailContent').innerHTML = html;
+            
+            // Quick actions
+            let actions = '';
+            if (currentColumn !== 'dev') actions += '<button class="move-dev" onclick="moveTask(' + taskId + ', \'dev\')">→ Dev</button>';
+            if (currentColumn !== 'review') actions += '<button class="move-review" onclick="moveTask(' + taskId + ', \'review\')">→ Review</button>';
+            if (currentColumn !== 'done') actions += '<button class="move-done" onclick="moveTask(' + taskId + ', \'done\')">✓ Done</button>';
+            actions += '<button class="delete" onclick="deleteTask(' + taskId + ')">🗑️ Delete</button>';
+            document.getElementById('quickActions').innerHTML = actions;
+            
+            document.getElementById('detailModal').classList.add('active');
+        }
+        
+        async function deleteTask(taskId) {
+            if (!confirm('Delete this task?')) return;
+            
+            try {
+                const response = await fetch(KANBAN_FILE);
+                const data = await response.json();
+                
+                for (const col of data.columns) {
+                    col.tasks = col.tasks.filter(t => t.id !== taskId);
+                }
+                
+                await fetch(KANBAN_FILE, {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                
+                closeModal('detailModal');
+                loadBoard();
+                showToast('Task deleted');
+            } catch (err) {
+                showToast('Error deleting task', true);
+            }
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Initial load
+        loadBoard();
+    </script>
 </body>
 </html>
