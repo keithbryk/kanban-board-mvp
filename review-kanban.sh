@@ -36,7 +36,7 @@ def get_ai_response(prompt):
     """Send prompt to AI"""
     try:
         result = subprocess.run([
-            "openclaw", "infer", "execute", "openrouter/minimax/minimax-m2.5:free", "--prompt", prompt
+            "/home/kbryk/.npm-global/bin/openclaw", "infer", "execute", "openrouter/minimax/minimax-m2.5:free", "--prompt", prompt
         ], capture_output=True, text=True, timeout=120)
         if result.returncode == 0:
             return result.stdout.strip()
