@@ -274,21 +274,50 @@ def main():
     with open(KANBAN_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-    # Build report
+    # Build report with activity summary
     message = "**📋 Kanban Hourly Review**\n\n"
     
+    # Show recent activity - WHY things changed
+    recent_activities = []
+    for col in data["columns"]:
+        for task in col["tasks"]:
+            for act in task.get("activity", [])[-3:]:
+                recent_activities.append({
+                    "task": task.get("text", "")[:40],
+                    "action": act.get("action", ""),
+                    "from": act.get("from"),
+                    "to": act.get("to"),
+                    "command": act.get("command"),
+                    "time": act.get("timestamp", "")[-8:-3]
+                })
+    
+    recent_activities.sort(key=lambda x: x["time"], reverse=True)
+    if recent_activities:
+        message += "📊 **Recent Activity:**\n"
+        for act in recent_activities[:5]:
+            if act["action"] == "moved":
+                message += f"  {act['time']} • {act['task']}: {act['from']} → {act['to']}\n"
+            elif act["action"] == "raz_command":
+                message += f"  {act['time']} • {act['task']}: {act['command']}\n"
+            elif act["action"] == "created":
+                message += f"  {act['time']} • Created: {act['task']}\n"
+            elif act["action"] == "auto_queue":
+                message += f"  {act['time']} • {act['task']}: → {act['to']}\n"
+        message += "\n"
+    
     if raz_commands_executed:
-        message += f"⚡ **Raz Commands Executed: {len(raz_commands_executed)}**\n"
+        message += f"⚡ **Raz Commands: {len(raz_commands_executed)}**\n"
         for cmd in raz_commands_executed[:3]:
             message += f"  • `{cmd['command']}` on Task {cmd['task_id']}\n"
         message += "\n"
     
     if all_notes:
-        message += f"📝 {len(all_notes)} task(s) with notes:\n\n"
-        for note in all_notes[:2]:
-            message += f"• {note['task_text']}\n"
+        message += f"📝 {len(all_notes)} task(s) with notes:\n"
+        for note in all_notes[:3]:
+            message += f"  • {note['task_text'][:60]}\n"
+        message += "\n"
     
-    message += f"\n**✅ Approved: {len(approved)} | Need Review: {len(need_review)}**\n"
+    message += f"**📈 Stats:** {len(approved)} approved, {len(need_review)} need review"
 
     encoded_message = urllib.parse.quote(message)
     subprocess.run([

@@ -20,6 +20,23 @@
               "to": "ideation"
             }
           ]
+        },
+        {
+          "id": 7,
+          "text": "update kanban board to edit details from UI",
+          "column": "ideation",
+          "done": false,
+          "notes": "!action:raz to development update to UI to edit details",
+          "createdAt": "2026-04-22T00:43:52.408Z",
+          "movedToIdeationAt": "2026-04-22T00:43:52.408Z",
+          "activity": [
+            {
+              "timestamp": "2026-04-22T00:43:52.408Z",
+              "action": "created",
+              "from": null,
+              "to": "ideation"
+            }
+          ]
         }
       ]
     },
@@ -74,14 +91,57 @@
               "timestamp": "2026-04-21T14:40:53.686216+00:00",
               "action": "raz_command",
               "command": "!priority: high"
+            },
+            {
+              "timestamp": "2026-04-22T00:40:21.632Z",
+              "action": "moved",
+              "from": "dev",
+              "to": "review",
+              "command": "UI button"
+            },
+            {
+              "timestamp": "2026-04-22T00:40:24.634Z",
+              "action": "moved",
+              "from": "review",
+              "to": "ideation",
+              "command": "UI button"
+            },
+            {
+              "timestamp": "2026-04-22T00:40:30.047Z",
+              "action": "moved",
+              "from": "ideation",
+              "to": "dev",
+              "command": "UI button"
+            },
+            {
+              "timestamp": "2026-04-22T00:42:35.276Z",
+              "action": "moved",
+              "from": "dev",
+              "to": "review",
+              "command": "UI button"
+            },
+            {
+              "timestamp": "2026-04-22T00:42:39.056Z",
+              "action": "moved",
+              "from": "review",
+              "to": "ideation",
+              "command": "UI button"
+            },
+            {
+              "timestamp": "2026-04-22T00:42:45.225Z",
+              "action": "moved",
+              "from": "ideation",
+              "to": "dev",
+              "command": "UI button"
             }
           ],
-          "movedAt": "2026-04-21T14:40:53.686162+00:00",
-          "movedToDevAt": "2026-04-21T14:40:53.686190+00:00",
+          "movedAt": "2026-04-22T00:42:45.225Z",
+          "movedToDevAt": "2026-04-22T00:42:45.225Z",
           "priority": "high",
           "prioritySetAt": "2026-04-21T14:40:53.686211+00:00",
           "watchedByRaz": true,
-          "watchedAt": "2026-04-21T14:40:53.686225+00:00"
+          "watchedAt": "2026-04-21T14:40:53.686225+00:00",
+          "movedToReviewAt": "2026-04-22T00:42:35.276Z"
         }
       ]
     },
